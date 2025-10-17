@@ -100,7 +100,7 @@ RUN \
     pip install -e ScopeSim_Data ;
 
 RUN bash "${HOME}/repos/METIS_Pipeline/toolbox/create_config.sh"; \
-    ln -s "${HOME}/irdb" "${HOME}/repos/METIS_Simulations/Simulations/inst_pkgs"
+    ln -s "${HOME}/repos/irdb" "${HOME}/repos/METIS_Simulations/Simulations/inst_pkgs"
 
 ENV AWETARGET metiswise
 

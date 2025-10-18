@@ -1,0 +1,52 @@
+# Usage:
+#
+# 1) Get OMEGACEN_CREDENTIALS from https://metis.strw.leidenuniv.nl/wiki/doku.php?id=ait:archive
+# export OMEGACEN_CREDENTIALS=username:password
+#
+# 2) Build the image
+# podman build --secret=id=OMEGACEN_CREDENTIALS,type=env -t metis_dbviewer .
+#
+# 3) Deploy image
+#
+# 4) Run image.
+# podman run -it --network=host metis_dbviewer
+
+FROM quay.io/condaforge/miniforge3:25.3.0-3
+# /opt/conda/lib/python3.12 is hardcoded in some (dbviewer) scripts, so update those if necessary.
+
+MAINTAINER Hugo Buddelmeijer <hugo@buddelmeijer.nl>
+
+RUN \
+    apt-get update; \
+    apt-get upgrade -y; \
+    apt-get install -y \
+        tmux vim ripgrep less file sqlite3;
+
+RUN --mount=type=secret,id=OMEGACEN_CREDENTIALS \
+    conda config --add channels conda-forge; \
+    conda config --add channels omegacen; \
+    conda config --add channels "https://$(cat /run/secrets/OMEGACEN_CREDENTIALS)@conda.astro-wise.org/"; \
+    conda install -y common psycopg2;
+
+# TODO: Also install commonwise from pip? But does not have static files..
+RUN --mount=type=secret,id=OMEGACEN_CREDENTIALS \
+    pip install \
+    --extra-index-url "https://$(cat /run/secrets/OMEGACEN_CREDENTIALS)@pip.entropynaut.com/packages/" \
+    metiswise ;
+
+RUN \
+    mkdir -p "${HOME}/bin"; \
+    mkdir -p "${HOME}/.awe/metiswise";
+
+COPY Environment.cfg "/root/.awe/metiswise/"
+COPY dbview.sh "/root/bin/"
+COPY dbview.cfg "/root/bin/"
+COPY entrypoint_dbview.sh "/root/bin/"
+
+#RUN bash "${HOME}/repos/METIS_Pipeline/toolbox/create_config.sh";
+
+ENV AWETARGET metiswise
+
+WORKDIR "/root"
+
+ENTRYPOINT ["/root/bin/entrypoint_dbview.sh"]

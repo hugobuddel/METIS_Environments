@@ -49,18 +49,23 @@ RUN \
 # Install
 # - cpl: easy from conda
 # - git: newest version allows --revision
-RUN \
+# - common: pip installation is currently broken.
+# - psycopg2: because it is necessary for common.
+RUN --mount=type=secret,id=OMEGACEN_CREDENTIALS \
     conda config --add channels conda-forge; \
-    conda install -y cpl git;
+    conda config --add channels omegacen; \
+    conda config --add channels "https://$(cat /run/secrets/OMEGACEN_CREDENTIALS)@conda.astro-wise.org/"; \
+    conda install -y cpl git common psycopg2;
 
 # Setting CPLDIR is necessary to install pycpl
 ENV CPLDIR=/opt/conda
 
-
-RUN --mount=type=secret,id=OMEGACEN_CREDENTIALS \
-    pip install \
-    --extra-index-url "https://$(cat /run/secrets/OMEGACEN_CREDENTIALS)@pip.entropynaut.com/packages/" \
-    "commonwise==2025.8.0a0"
+# TODO: Install common also through pip. Unfortunately it currently does not
+# contain the static files needed for the dbviewer.
+#RUN --mount=type=secret,id=OMEGACEN_CREDENTIALS \
+#    pip install \
+#    --extra-index-url "https://$(cat /run/secrets/OMEGACEN_CREDENTIALS)@pip.entropynaut.com/packages/" \
+#    "commonwise"
 
 # TODO: Hardcode specific versions.
 RUN pip install \

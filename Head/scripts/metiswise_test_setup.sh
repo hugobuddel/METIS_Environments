@@ -5,6 +5,12 @@ echo "Executing METIS Pipeline end-to-end tests. Simulation - Pipeline - Archive
 
 echo "Setup."
 
+echo "Remove database-is-ready control flag."
+FN_CONTROL_DATABASE_READY="${HOME}/space/control/database_setup"
+if [ -f "${FN_CONTROL_DATABASE_READY}" ] ; then
+  rm "${FN_CONTROL_DATABASE_READY}"
+fi
+
 echo "Updating Repositories, they can be old the container image."
 pushd "${HOME}/repos"
 REPODIRS=$(find . -mindepth 1 -maxdepth 1 -type d)
@@ -19,6 +25,8 @@ git checkout mb/fileformat
 popd
 
 echo "Setting up database."
+mkdir -p "${HOME}/space/control/"
+
 echo "Becoming system user."
 source "${HOME}/repos/MetisWISE/toolbox/become_system_user.sh"
 
@@ -39,8 +47,7 @@ echo "Become normal user again."
 source "${HOME}/repos/MetisWISE/toolbox/become_normal_user.sh"
 
 echo "Telling the dbviewer it can start."
-mkdir -p "${HOME}/space/control/"
-touch "${HOME}/space/control/database_setup"
+touch "${FN_CONTROL_DATABASE_READY}"
 
 echo "Check ESO tools."
 echo "Can we run recipes?"

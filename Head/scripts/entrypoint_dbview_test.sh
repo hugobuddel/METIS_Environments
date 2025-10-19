@@ -6,7 +6,7 @@ while [ ! -f  /root/space/control/database_setup ]; do
 done
 
 echo "Starting database"
-"${HOME}/MetisWISE/toolbox/dbview.sh" start
+/root/scripts/dbview.sh start
 
 echo "Sleeping so the script won't quit"
 while true ; do sleep 60 ; done

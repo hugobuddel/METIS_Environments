@@ -20,7 +20,12 @@ RUN \
     apt-get update; \
     apt-get upgrade -y; \
     apt-get install -y \
-        tmux vim ripgrep less file sqlite3;
+        file  \
+        less \
+        ripgrep  \
+        sqlite3 \
+        tmux  \
+        vim ;
 
 RUN --mount=type=secret,id=OMEGACEN_CREDENTIALS \
     conda config --add channels conda-forge; \

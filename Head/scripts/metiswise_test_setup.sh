@@ -19,11 +19,6 @@ for REPOD in $REPODIRS ; do
 done
 popd
 
-echo "Updating METIS_Pipeline to 'mb/fileformat'"
-pushd "${HOME}/repos/METIS_Pipeline"
-git checkout mb/fileformat
-popd
-
 echo "Setting up database."
 mkdir -p "${HOME}/space/control/"
 

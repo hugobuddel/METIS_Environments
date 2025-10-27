@@ -13,6 +13,7 @@ mkdir -p "${DATADIR}/ddata"  # Deleted data
 mkdir -p "${DATADIR}/tdata"  # Temporary data, unused
 
 echo "Generate self-signed certificate"
+cd "${DATADIR}" || die
 # Create key.
 openssl genrsa -out mylocalhost.key 2048
 # Create certificate signing request.
@@ -25,5 +26,5 @@ cat mylocalhost.key mylocalhost.crt > mylocalhost.pem
 echo "Starting dataserver"
 python -u -m dataserver.main --config /root/scripts/ds.cfg
 
-echo "Sleeping so the script won't quit"
-while true ; do sleep 60 ; done
+#echo "Sleeping so the script won't quit"
+#while true ; do sleep 60 ; done

@@ -11,7 +11,7 @@ if [ -f "${FN_CONTROL_DATABASE_READY}" ] ; then
   rm "${FN_CONTROL_DATABASE_READY}"
 fi
 
-echo "Updating Repositories, they can be old the container image."
+echo "Updating Repositories, they can be old in the container image."
 pushd "${HOME}/repos"
 REPODIRS=$(find . -mindepth 1 -maxdepth 1 -type d)
 for REPOD in $REPODIRS ; do
@@ -45,9 +45,11 @@ echo "Telling the dbviewer it can start."
 touch "${FN_CONTROL_DATABASE_READY}"
 
 echo "Testing the ingestion of a file."
+pushd "${HOME}/scripts"
 # TODO: Remove hardcoded port.
 env data_protocol=https data_server=localhost data_port=8013 database_engine=filebased python storefile.py
 curl -k https://localhost:8013/testfile.txt
+popd
 
 echo "Check ESO tools."
 echo "Can we run recipes?"

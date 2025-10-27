@@ -1,16 +1,29 @@
 #!/usr/bin/env bash
 
-echo "Create /root/space/dataserver"
-mkdir -p /root/space/dataserver
-# TODO: Also create cdata, pdata, sdata, xdata, and ydata directories?
+export DATADIR=/root/space/dataserver
+echo "Create ${DATADIR}"
+mkdir -p "${DATADIR}"
+mkdir -p "${DATADIR}/cdata"  # Cache from other data servers, unused
+mkdir -p "${DATADIR}/idata"  # 'Ingested data', unused
+mkdir -p "${DATADIR}/sdata"  # Stored data, default, can be overwritten
+mkdir -p "${DATADIR}/pdata"  # Permanent data, cannot be overwritten
+mkdir -p "${DATADIR}/xdata"  # Direct read, unused
+mkdir -p "${DATADIR}/ydata"  # Direct write, unused
+mkdir -p "${DATADIR}/ddata"  # Deleted data
+mkdir -p "${DATADIR}/tdata"  # Temporary data, unused
 
-
-#source /local/micado-users/micado-oper/miniconda3/etc/profile.d/conda.sh
-#conda activate micadowise-env
-#cd /mnt/dh4/muse/micado/data
+echo "Generate self-signed certificate"
+# Create key.
+openssl genrsa -out mylocalhost.key 2048
+# Create certificate signing request.
+openssl req -key mylocalhost.key -new -out mylocalhost.csr -subj "/CN=localhost"
+# Sign certificate.
+openssl x509 -signkey mylocalhost.key -in mylocalhost.csr -req -days 365 -out mylocalhost.crt
+# Combine key and certificate in single pem file.
+cat mylocalhost.key mylocalhost.crt > mylocalhost.pem
 
 echo "Starting dataserver"
-env datadir=/root/space/dataserver python -u -m dataserver.main --config /root/scripts/ds.cfg
+python -u -m dataserver.main --config /root/scripts/ds.cfg
 
 echo "Sleeping so the script won't quit"
 while true ; do sleep 60 ; done

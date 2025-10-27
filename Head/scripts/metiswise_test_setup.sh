@@ -44,6 +44,11 @@ source "${HOME}/repos/MetisWISE/toolbox/become_normal_user.sh"
 echo "Telling the dbviewer it can start."
 touch "${FN_CONTROL_DATABASE_READY}"
 
+echo "Testing the ingestion of a file."
+# TODO: Remove hardcoded port.
+env data_protocol=https data_server=localhost data_port=8013 database_engine=filebased python storefile.py
+curl -k https://localhost:8013/testfile.txt
+
 echo "Check ESO tools."
 echo "Can we run recipes?"
 pyesorex --recipes

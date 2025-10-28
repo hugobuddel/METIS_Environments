@@ -46,9 +46,8 @@ touch "${FN_CONTROL_DATABASE_READY}"
 
 echo "Testing the ingestion of a file."
 pushd "${HOME}/scripts"
-# TODO: Remove hardcoded port.
-env data_protocol=https data_server=localhost data_port=8013 database_engine=filebased python storefile.py
-curl -k https://localhost:8013/testfile.txt
+python storefile.py
+curl -k https://dataserver:8013/testfile.txt
 popd
 
 echo "Check ESO tools."
@@ -73,7 +72,7 @@ ln -s "${HOME}/space/raw" output || true
 ln -s "${HOME}/repos/irdb" inst_pkgs || true
 
 echo "Simulating imgN.py."
-#python3 "python/imgN.py"
+python3 "python/imgN.py"
 popd
 
 echo "TODO: Add more simulations; for now just imgN."

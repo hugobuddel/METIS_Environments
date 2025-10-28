@@ -106,7 +106,10 @@ RUN \
     pip install -e ScopeSim_Data ;
 
 RUN bash "${HOME}/repos/METIS_Pipeline/toolbox/create_config.sh"; \
+    mkdir -p "${HOME}/.awe"; \
     ln -s "${HOME}/repos/irdb" "${HOME}/repos/METIS_Simulations/Simulations/inst_pkgs"
+
+COPY scripts/Environment.cfg /root/.awe/Environment.cfg
 
 ENV AWETARGET metiswise
 

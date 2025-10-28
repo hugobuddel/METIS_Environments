@@ -24,3 +24,11 @@ services:
     volumes:
       - ./scripts:/root/scripts
       - ./space:/root/space
+  dataserver:
+    image: metis_head:latest
+    ports:
+      - "127.0.0.1:8013:8013" # dbviewer
+    entrypoint: /root/scripts/entrypoint_dataserver.sh
+    volumes:
+      - ./scripts:/root/scripts
+      - ./space:/root/space

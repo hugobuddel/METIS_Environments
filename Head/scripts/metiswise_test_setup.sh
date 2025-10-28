@@ -11,17 +11,12 @@ if [ -f "${FN_CONTROL_DATABASE_READY}" ] ; then
   rm "${FN_CONTROL_DATABASE_READY}"
 fi
 
-echo "Updating Repositories, they can be old the container image."
+echo "Updating Repositories, they can be old in the container image."
 pushd "${HOME}/repos"
 REPODIRS=$(find . -mindepth 1 -maxdepth 1 -type d)
 for REPOD in $REPODIRS ; do
   git -C "${REPOD}" pull
 done
-popd
-
-echo "Updating METIS_Pipeline to 'mb/fileformat'"
-pushd "${HOME}/repos/METIS_Pipeline"
-git checkout mb/fileformat
 popd
 
 echo "Setting up database."
@@ -49,6 +44,12 @@ source "${HOME}/repos/MetisWISE/toolbox/become_normal_user.sh"
 echo "Telling the dbviewer it can start."
 touch "${FN_CONTROL_DATABASE_READY}"
 
+echo "Testing the ingestion of a file."
+pushd "${HOME}/scripts"
+python storefile.py
+curl -k https://dataserver:8013/testfile.txt
+popd
+
 echo "Check ESO tools."
 echo "Can we run recipes?"
 pyesorex --recipes
@@ -71,7 +72,7 @@ ln -s "${HOME}/space/raw" output || true
 ln -s "${HOME}/repos/irdb" inst_pkgs || true
 
 echo "Simulating imgN.py."
-#python3 "python/imgN.py"
+python3 "python/imgN.py"
 popd
 
 echo "TODO: Add more simulations; for now just imgN."

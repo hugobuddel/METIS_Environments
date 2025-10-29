@@ -15,6 +15,16 @@ services:
     volumes:
       - ./space:/root/space
       - ./scripts:/root/scripts
+    ports:
+      - "127.0.0.1:8888:8888" # jupyter
+    entrypoint: /root/scripts/entrypoint_notebook.sh
+  mwsetuptest:
+    image: metis_head:latest
+    environment:
+      - DISPLAY=${DISPLAY}
+    volumes:
+      - ./space:/root/space
+      - ./scripts:/root/scripts
     entrypoint: /root/scripts/metiswise_test_setup.sh
   dbviewer:
     image: metis_head:latest

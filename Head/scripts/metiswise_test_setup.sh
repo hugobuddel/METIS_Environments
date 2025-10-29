@@ -79,7 +79,7 @@ echo "TODO: Add more simulations; for now just imgN."
 
 echo "Process data."
 echo "Classify data with the EDPS"
-#edps -w metis.metis_wkf -i "${HOME}/space/raw" -c
+edps -w metis.metis_wkf -i "${HOME}/space/raw" -c
 
 echo "Ingesting raw data into the archive"
 python "${HOME}/repos/MetisWISE/metiswise/tools/ingest_file.py" "${HOME}"/space/raw/*/*.fits

@@ -16,17 +16,9 @@ Run image.
 podman run -it --network=host metis_dbviewer
 ```
 
-A private key and certificate are required to use SSL, below are
-the steps to create them. In the second step give the server dns when
-the "Common name" is asked.
+A private key and certificate are required to use SSL, a self-signed
+certificate is created automatically.
 
 ```commandline
-openssl genrsa -out certificate/server.key 4096
-openssl req -new -key certificate/server.key -out certificate/server.csr
-openssl x509 -req -days 365 -in certificate/server.csr -signkey certificate/server.key -out certificate/server.crt 
-```
-
-
-```commandline
-podman run -it --network=host --volume="$(pwd)/certificate:/root/certificate" metis_dbviewer
+podman run -it --network=host metis_dbviewer
 ```

@@ -13,7 +13,7 @@ mkdir -p "${DATADIR}/ddata"  # Deleted data
 mkdir -p "${DATADIR}/tdata"  # Temporary data, unused
 
 echo "Generate self-signed certificate"
-cd "${DATADIR}" || die
+cd "${DATADIR}" || exit 1
 # Create key.
 openssl genrsa -out localhost_selfsigned.key 2048
 # Create certificate signing request.

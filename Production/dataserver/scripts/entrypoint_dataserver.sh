@@ -15,16 +15,13 @@ mkdir -p "${DATADIR}/tdata"  # Temporary data, unused
 echo "Generate self-signed certificate"
 cd "${DATADIR}" || exit 1
 # Create key.
-openssl genrsa -out mylocalhost.key 2048
+openssl genrsa -out localhost_selfsigned.key 2048
 # Create certificate signing request.
-openssl req -key mylocalhost.key -new -out mylocalhost.csr -subj "/CN=localhost"
+openssl req -key localhost_selfsigned.key -new -out localhost_selfsigned.csr -subj "/CN=localhost"
 # Sign certificate.
-openssl x509 -signkey mylocalhost.key -in mylocalhost.csr -req -days 365 -out mylocalhost.crt
+openssl x509 -signkey localhost_selfsigned.key -in localhost_selfsigned.csr -req -days 365 -out localhost_selfsigned.crt
 # Combine key and certificate in single pem file.
-cat mylocalhost.key mylocalhost.crt > mylocalhost.pem
+cat localhost_selfsigned.key localhost_selfsigned.crt > localhost_selfsigned.pem
 
 echo "Starting dataserver"
 python -u -m dataserver.main --config /root/scripts/ds.cfg
-
-#echo "Sleeping so the script won't quit"
-#while true ; do sleep 60 ; done

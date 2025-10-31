@@ -1,0 +1,38 @@
+# Usage:
+#
+# 1) Get OMEGACEN_CREDENTIALS from https://metis.strw.leidenuniv.nl/wiki/doku.php?id=ait:archive
+# export OMEGACEN_CREDENTIALS=username:password
+#
+# 2) Build the image
+# podman build --secret=id=OMEGACEN_CREDENTIALS,type=env -t metis_dataserver .
+#
+# 3) Run the image
+# podman run  -it --network=host --volume="/mnt/dh5/metis/data/dataserver:/root/space/dataserver" metis_dataserver
+
+FROM quay.io/condaforge/miniforge3:25.3.0-3
+
+MAINTAINER Hugo Buddelmeijer <hugo@buddelmeijer.nl>
+
+RUN \
+    apt-get update; \
+    apt-get upgrade -y; \
+    apt-get install -y \
+        net-tools \
+        tmux \
+        curl
+
+# Install
+# - common: pip installation is currently broken.
+# - dataserver: to have a local dataserver installation.
+# - psycopg2: because it is necessary for common.
+RUN --mount=type=secret,id=OMEGACEN_CREDENTIALS \
+    conda config --add channels conda-forge; \
+    conda config --add channels omegacen; \
+    conda config --add channels "https://$(cat /run/secrets/OMEGACEN_CREDENTIALS)@conda.astro-wise.org/"; \
+    conda install -y common dataserver psycopg2;
+
+COPY scripts /root/scripts
+
+WORKDIR "/root"
+
+CMD ["/root/scripts/entrypoint_dataserver.sh"]

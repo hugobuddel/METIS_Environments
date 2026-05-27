@@ -65,6 +65,7 @@ RUN \
 # - common: pip installation is currently broken.
 # - dataserver: to have a local dataserver installation.
 # - psycopg2: because it is necessary for common.
+# TODO: pybind11: pycpl does not work with pybind11 3.0.3, see https://jira.eso.org/browse/PIPE-12896
 RUN --mount=type=secret,id=OMEGACEN_CREDENTIALS \
     conda config --add channels conda-forge; \
     conda config --add channels omegacen; \
@@ -74,6 +75,7 @@ RUN --mount=type=secret,id=OMEGACEN_CREDENTIALS \
           git \
           common \
           dataserver \
+          "pybind11==3.0.2" \
           psycopg2;
 
 # Setting CPLDIR is necessary to install pycpl
@@ -89,8 +91,10 @@ ENV CPLDIR=/opt/conda
 RUN pip install pytest jupyter
 
 # TODO: Use a lock file so also the dependencies are hardcoded.
+# TODO: pybind11: pycpl does not work with pybind11 3.0.3, see https://jira.eso.org/browse/PIPE-12896
 RUN pip install \
     --extra-index-url https://ftp.eso.org/pub/dfs/pipelines/libraries \
+    "pybind11==3.0.2" \
     pycpl \
     pyesorex \
     edps \

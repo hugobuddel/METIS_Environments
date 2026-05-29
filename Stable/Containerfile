@@ -112,6 +112,7 @@ RUN --mount=type=secret,id=OMEGACEN_CREDENTIALS \
     "dataserverwise==2026.5.0" \
     "commonwise==2026.5.0" \
     "metiswise==0.0.3" \
+    metis-simulations \
     "eso-pymetis==0.1.0" \
     "pyesorex==1.0.3" \
     "edps==1.7.1" \

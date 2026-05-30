@@ -94,7 +94,9 @@ set -e
 
 # Path to awehome, the root directory of the WISE installation
 #AWEHOME="/repos/wise"
-AWEHOME="/opt/conda/lib/python3.12/site-packages"
+#AWEHOME="/opt/conda/lib/python3.12/site-packages"
+AWEHOME=$(python -c 'import site; print(site.getsitepackages()[0])')
+export AWEHOME
 
 # Example: common, astro, awlofar, micro, ai, muse, ..
 AWETARGET="metiswise"
@@ -114,7 +116,8 @@ service="`basename $0 | awk -F. '{print $1}'`"
 # The directory with the common and specific (ie astro/muse/...) python code
 #AWEPIPE="${AWEHOME}/${AWEVERSION}"
 #AWEPIPE="/repos/wise"
-AWEPIPE="/opt/conda/lib/python3.12/site-packages"
+#AWEPIPE="/opt/conda/lib/python3.12/site-packages"
+AWEPIPE=$AWEHOME
 export AWEPIPE
 
 # Full path to awe client, just use "awe" if awe is in ${PATH}

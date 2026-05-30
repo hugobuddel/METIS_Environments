@@ -9,8 +9,8 @@
 # 3) Run the image
 # podman-compose up
 
-FROM quay.io/condaforge/miniforge3:25.3.0-3
-# /opt/conda/lib/python3.12 is hardcoded in some (dbviewer) scripts, so update those if necessary.
+FROM docker.io/library/debian:forky
+# Forky has a new enough git to have --revision, but also still Python 3.12.
 
 MAINTAINER Hugo Buddelmeijer <hugo@buddelmeijer.nl>
 
@@ -28,6 +28,7 @@ MAINTAINER Hugo Buddelmeijer <hugo@buddelmeijer.nl>
 # - libxcb-keysyms1-dev
 # - libxcb-icccm4-dev
 # - libxcb-shape0-dev
+# - python3-pyqt6
 #
 # Development dependencies:
 # -
@@ -44,7 +45,8 @@ RUN \
         build-essential \
         pkg-config \
         postgresql \
-        wget gcc  automake autogen libtool gsl-bin libgsl-dev libfftw3-bin libfftw3-dev fftw-dev \
+        wget gcc  automake autogen libtool gsl-bin libgsl-dev \
+        libfftw3-bin libfftw3-dev fftw-dev \
         curl bzip2 subversion git cppcheck lcov valgrind \
         zlib1g zlib1g-dev \
         liberfa1 liberfa-dev \
@@ -57,50 +59,21 @@ RUN \
         graphviz meld \
         xcb libxkbcommon-dev  libxkbcommon-x11-dev libxcb-cursor-dev \
         libxcb-keysyms1-dev libxcb-icccm4-dev  libxcb-shape0-dev \
+        python3-pyqt6 \
+        python-is-python3 \
+        python3 \
+        python3-pip \
         emacs vim nano;
-
-# Install
-# - cpl: easy from conda
-# - git: newest version allows --revision
-# - common: pip installation is currently broken.
-# - dataserver: to have a local dataserver installation.
-# - psycopg2: because it is necessary for common.
-# TODO: pybind11: pycpl does not work with pybind11 3.0.3, see https://jira.eso.org/browse/PIPE-12896
-# RUN --mount=type=secret,id=OMEGACEN_CREDENTIALS \
-#     conda config --add channels conda-forge; \
-#     conda config --add channels omegacen; \
-#     conda config --add channels "https://$(cat /run/secrets/OMEGACEN_CREDENTIALS)@conda.astro-wise.org/"; \
-#     conda install -y \
-#           "cpl==7.3.4" \
-#           git \
-#           "common==2026.05.0" \
-#           "dataserver==2026.05.0" \
-#           "pybind11==3.0.2" \
-#           psycopg2;
-RUN \
-    conda config --add channels conda-forge; \
-    conda install -y \
-          git;
-
-# # Setting CPLDIR is necessary to install pycpl
-# ENV CPLDIR=/opt/conda
-
-# TODO: Install common also through pip. Unfortunately it currently does not
-# contain the static files needed for the dbviewer.
-#RUN --mount=type=secret,id=OMEGACEN_CREDENTIALS \
-#    pip install \
-#    --extra-index-url "https://$(cat /run/secrets/OMEGACEN_CREDENTIALS)@pip.entropynaut.com/packages/" \
-#    "commonwise"
-#
-# RUN pip install pytest jupyter
 
 # TODO: Use a lock file so also the dependencies are hardcoded.
 # TODO: pybind11: pycpl does not work with pybind11 3.0.3, see https://jira.eso.org/browse/PIPE-12896
 # ivh.github.io is necessary for pycpl that includes cpl
 # pip.entropynaut.com is necessary for metiswise, commonwise, dataserverwise, metis-drld, eso-pymetis
 # ftp.eso.org is necessary for pyesorex, edps, and adaric_core
+# --break-system-packages should be fine because we are not the system python
+# for anything else
 RUN --mount=type=secret,id=OMEGACEN_CREDENTIALS \
-    pip install \
+    pip3 install --break-system-packages \
     --extra-index-url https://ivh.github.io/pycpl/simple/ \
     --extra-index-url https://ftp.eso.org/pub/dfs/pipelines/libraries \
     --extra-index-url https://$(cat /run/secrets/OMEGACEN_CREDENTIALS)@pip.entropynaut.com/packages \
@@ -123,10 +96,9 @@ RUN --mount=type=secret,id=OMEGACEN_CREDENTIALS \
 RUN mkdir -p /root/repos
 WORKDIR /root/repos
 
-
-# Clone all METIS projects
-# Use git clones instead of pip installs because this makes it easier
-# to have the same scripts in both the Stable and the Head Containerfiles.
+# Clone all METIS projects.
+# This is still necessary because not all projects have everything they need
+# in the pip package.
 RUN \
     git clone https://github.com/AstarVienna/ScopeSim --revision=v0.11.4 ; \
     git clone https://github.com/AstarVienna/ScopeSim_Templates --revision=v0.8.1 ; \
@@ -140,18 +112,6 @@ RUN \
     git clone https://github.com/AstarVienna/MTR --revision=0df99963ff41078be37f89cfc772d0ae603a046a ; \
     git clone https://github.com/AstarVienna/MetisWISE --revision=main ;
 
-# Install all METIS projects.
-# METIS_Simulations / ScopeSim_Templates / ScopeSim should be installed in
-# this order because otherwise they might install different versions of
-# each other. \
-# RUN \
-#     pip install -e METIS_Simulations ; \
-#     pip install -e ScopeSim_Templates ; \
-#     pip install -e ScopeSim ; \
-#     pip install -e speXtra ; \
-#     pip install -e MetisWISE ; \
-#     pip install -e ScopeSim_Data ;
-
 # Create data directories.
 # These will be mounted over by podman-compose, but having them makes it
 # possible to run the image standalone.
@@ -160,15 +120,10 @@ RUN mkdir -p /root/space/EDPS_data
 RUN mkdir -p /root/space/raw
 RUN mkdir -p /root/space/processed
 
-# Create recipe directory that is not actually used, but otherwise
-# pyesorex complains.
-# RUN mkdir -p /opt/conda/lib/esopipes-plugins
-
 # Set MTR configuration
 ENV METIS_META_PKG "/root/repos/metis-meta-package/"
 # For some reason MTR expects METIS_Simulations to exist within its own directory.
 RUN ln -s /root/repos/METIS_Simulations /root/repos/MTR
-
 
 # Copy configuration.
 RUN mkdir -p "/root/.edps"

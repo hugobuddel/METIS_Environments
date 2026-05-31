@@ -138,7 +138,7 @@ RUN \
     git clone https://github.com/AstarVienna/METIS_Pipeline_Test_Data --revision=v2025.08.15 ; \
     git clone https://github.com/eiseleb47/metis-meta-package --revision=ce55da71e9126428af1ae91d12b436d4880fc359 ; \
     git clone https://github.com/AstarVienna/MTR --revision=0df99963ff41078be37f89cfc772d0ae603a046a ; \
-    git clone https://github.com/AstarVienna/MetisWISE --revision=main ;
+    git clone https://github.com/AstarVienna/MetisWISE --revision=v0.0.4 ;
 
 # Install all METIS projects.
 # METIS_Simulations / ScopeSim_Templates / ScopeSim should be installed in

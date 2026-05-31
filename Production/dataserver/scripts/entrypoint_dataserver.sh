@@ -4,7 +4,8 @@ export DATADIR=/root/space/dataserver
 echo "Create ${DATADIR}"
 mkdir -p "${DATADIR}"
 mkdir -p "${DATADIR}/cdata"  # Cache from other data servers, unused
-mkdir -p "${DATADIR}/idata"  # 'Ingested data', unused
+# Including an idata directory makes anonymous uploads through PUT possible.
+#mkdir -p "${DATADIR}/idata"  # 'Ingested data', unused
 mkdir -p "${DATADIR}/sdata"  # Stored data, default, can be overwritten
 mkdir -p "${DATADIR}/pdata"  # Permanent data, cannot be overwritten
 mkdir -p "${DATADIR}/xdata"  # Direct read, unused

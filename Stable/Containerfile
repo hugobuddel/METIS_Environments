@@ -20,6 +20,15 @@ MAINTAINER Hugo Buddelmeijer <hugo@buddelmeijer.nl>
 #
 # Build dependencies:
 #
+# For MTR:
+# - xcb
+# - libxkbcommon-dev
+# - libxkbcommon-x11-dev
+# - libxcb-cursor-dev
+# - libxcb-keysyms1-dev
+# - libxcb-icccm4-dev
+# - libxcb-shape0-dev
+#
 # Development dependencies:
 # -
 #
@@ -46,6 +55,8 @@ RUN \
         wcslib-dev wcslib-tools \
         perl cmake \
         graphviz meld \
+        xcb libxkbcommon-dev  libxkbcommon-x11-dev libxcb-cursor-dev \
+        libxcb-keysyms1-dev libxcb-icccm4-dev  libxcb-shape0-dev \
         emacs vim nano;
 
 # Install
@@ -54,19 +65,25 @@ RUN \
 # - common: pip installation is currently broken.
 # - dataserver: to have a local dataserver installation.
 # - psycopg2: because it is necessary for common.
-RUN --mount=type=secret,id=OMEGACEN_CREDENTIALS \
+# TODO: pybind11: pycpl does not work with pybind11 3.0.3, see https://jira.eso.org/browse/PIPE-12896
+# RUN --mount=type=secret,id=OMEGACEN_CREDENTIALS \
+#     conda config --add channels conda-forge; \
+#     conda config --add channels omegacen; \
+#     conda config --add channels "https://$(cat /run/secrets/OMEGACEN_CREDENTIALS)@conda.astro-wise.org/"; \
+#     conda install -y \
+#           "cpl==7.3.4" \
+#           git \
+#           "common==2026.05.0" \
+#           "dataserver==2026.05.0" \
+#           "pybind11==3.0.2" \
+#           psycopg2;
+RUN \
     conda config --add channels conda-forge; \
-    conda config --add channels omegacen; \
-    conda config --add channels "https://$(cat /run/secrets/OMEGACEN_CREDENTIALS)@conda.astro-wise.org/"; \
     conda install -y \
-          "cpl==7.3.2" \
-          git \
-          "common==2025.11.1" \
-          "dataserver==2025.11.0" \
-          psycopg2;
+          git;
 
-# Setting CPLDIR is necessary to install pycpl
-ENV CPLDIR=/opt/conda
+# # Setting CPLDIR is necessary to install pycpl
+# ENV CPLDIR=/opt/conda
 
 # TODO: Install common also through pip. Unfortunately it currently does not
 # contain the static files needed for the dbviewer.
@@ -74,16 +91,32 @@ ENV CPLDIR=/opt/conda
 #    pip install \
 #    --extra-index-url "https://$(cat /run/secrets/OMEGACEN_CREDENTIALS)@pip.entropynaut.com/packages/" \
 #    "commonwise"
-
-RUN pip install pytest jupyter
+#
+# RUN pip install pytest jupyter
 
 # TODO: Use a lock file so also the dependencies are hardcoded.
-RUN pip install \
+# TODO: pybind11: pycpl does not work with pybind11 3.0.3, see https://jira.eso.org/browse/PIPE-12896
+# ivh.github.io is necessary for pycpl that includes cpl
+# pip.entropynaut.com is necessary for metiswise, commonwise, dataserverwise, metis-drld, eso-pymetis
+# ftp.eso.org is necessary for pyesorex, edps, and adaric_core
+RUN --mount=type=secret,id=OMEGACEN_CREDENTIALS \
+    pip install \
+    --extra-index-url https://ivh.github.io/pycpl/simple/ \
     --extra-index-url https://ftp.eso.org/pub/dfs/pipelines/libraries \
-    "pycpl==1.0.3" \
+    --extra-index-url https://$(cat /run/secrets/OMEGACEN_CREDENTIALS)@pip.entropynaut.com/packages \
+    pytest \
+    jupyter \
+    "pybind11==3.0.2" \
+    "pycpl==1.0.3.post4" \
+    "metis-drld==0.0.3" \
+    "dataserverwise==2026.5.0" \
+    "commonwise==2026.5.0" \
+    "metiswise==0.0.3" \
+    metis-simulations \
+    "eso-pymetis==0.1.0" \
     "pyesorex==1.0.3" \
-    "edps==1.6.0" \
-    "adari_core==4.1.0"
+    "edps==1.7.1" \
+    "adari_core==4.3.0"
 
 # Create a directory where to checkout the repositories.
 # This directory can then be mounted over in the development environment.
@@ -95,26 +128,29 @@ WORKDIR /root/repos
 # Use git clones instead of pip installs because this makes it easier
 # to have the same scripts in both the Stable and the Head Containerfiles.
 RUN \
-    git clone https://github.com/AstarVienna/ScopeSim --revision=v0.11.1 ; \
-    git clone https://github.com/AstarVienna/ScopeSim_Templates --revision=0.7.0 ; \
+    git clone https://github.com/AstarVienna/ScopeSim --revision=v0.11.4 ; \
+    git clone https://github.com/AstarVienna/ScopeSim_Templates --revision=v0.8.1 ; \
     git clone https://github.com/AstarVienna/ScopeSim_Data --revision=v2025.11.15 ; \
-    git clone https://github.com/AstarVienna/irdb --revision=METIS.2025-10-26 ; \
-    git clone https://github.com/AstarVienna/METIS_DRLD --revision=v2025.11.15 ; \
-    git clone https://github.com/AstarVienna/METIS_Simulations --revision=v2025.11.15 ; \
-    git clone https://github.com/AstarVienna/METIS_Pipeline --revision=v0.2.3 ; \
-    git clone https://github.com/AstarVienna/METIS_Pipeline_Test_Data --revision=v2025.02.15 ; \
-    git clone https://github.com/AstarVienna/MetisWISE --revision=v2025.11.15 ;
+    git clone https://github.com/AstarVienna/irdb --revision=METIS.2026-04-17 ; \
+    git clone https://github.com/AstarVienna/METIS_DRLD --revision=v2026.05.15 ; \
+    git clone https://github.com/AstarVienna/METIS_Simulations --revision=v20260520 ; \
+    git clone https://github.com/AstarVienna/METIS_Pipeline --revision=v0.4.0 ; \
+    git clone https://github.com/AstarVienna/METIS_Pipeline_Test_Data --revision=v2025.08.15 ; \
+    git clone https://github.com/eiseleb47/metis-meta-package --revision=ce55da71e9126428af1ae91d12b436d4880fc359 ; \
+    git clone https://github.com/AstarVienna/MTR --revision=0df99963ff41078be37f89cfc772d0ae603a046a ; \
+    git clone https://github.com/AstarVienna/MetisWISE --revision=v0.0.4 ;
 
 # Install all METIS projects.
 # METIS_Simulations / ScopeSim_Templates / ScopeSim should be installed in
 # this order because otherwise they might install different versions of
 # each other. \
-RUN \
-    pip install -e METIS_Simulations ; \
-    pip install -e ScopeSim_Templates ; \
-    pip install -e ScopeSim ; \
-    pip install -e MetisWISE ; \
-    pip install -e ScopeSim_Data ;
+# RUN \
+#     pip install -e METIS_Simulations ; \
+#     pip install -e ScopeSim_Templates ; \
+#     pip install -e ScopeSim ; \
+#     pip install -e speXtra ; \
+#     pip install -e MetisWISE ; \
+#     pip install -e ScopeSim_Data ;
 
 # Create data directories.
 # These will be mounted over by podman-compose, but having them makes it
@@ -126,23 +162,33 @@ RUN mkdir -p /root/space/processed
 
 # Create recipe directory that is not actually used, but otherwise
 # pyesorex complains.
-RUN mkdir -p /opt/conda/lib/esopipes-plugins
+# RUN mkdir -p /opt/conda/lib/esopipes-plugins
+
+# Set MTR configuration
+ENV METIS_META_PKG "/root/repos/metis-meta-package/"
+# For some reason MTR expects METIS_Simulations to exist within its own directory.
+RUN ln -s /root/repos/METIS_Simulations /root/repos/MTR
+
 
 # Copy configuration.
-RUN mkdir -p "${HOME}/.edps"
+RUN mkdir -p "/root/.edps"
 COPY config/DOTedps/application.properties /root/.edps/
 COPY config/DOTedps/logging.yaml /root/.edps/
 COPY config/breakpoints.json /root/.edps/
 
-RUN     mkdir -p "${HOME}/.awe"; \
-    ln -s "${HOME}/repos/irdb" "${HOME}/repos/METIS_Simulations/Simulations/inst_pkgs"
+RUN mkdir -p "/root/.awe"
 
 COPY scripts/Environment.cfg /root/.awe/Environment.cfg
 
 ENV AWETARGET metiswise
 
-ENV PYESOREX_PLUGIN_DIR "/root/repos/METIS_Pipeline/metisp/pymetis/src/pymetis/recipes"
+ENV PYESOREX_PLUGIN_DIR "/root/repos/METIS_Pipeline/metisp/pyrecipes/"
 ENV PYCPL_RECIPE_DIR "/root/repos/METIS_Pipeline/metisp/pyrecipes/"
+
+ENV DEFAULT_IRDB_LOCATION "/root/repos/irdb/"
+ENV MSIM_YAML_DIR "/root/repos/METIS_Simulations/YAML/ESO"
+ENV MSIM_NCORES "3"
+ENV MSIM_OUTDIR "/root/space/raw/"
 
 # TODO: Ensure that it is not necessary to set the PYTHONPATH at all
 ENV PYTHONPATH "/root/repos/METIS_DRLD:/root/repos/METIS_Pipeline/metisp/pymetis/src/:/root/repos/MetisWISE"
